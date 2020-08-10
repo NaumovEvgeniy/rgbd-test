@@ -14,10 +14,29 @@
 					<hr>
 				</li>
 			</ul>
+			<div><b>Video tracks:</b></div>
+			<ul>
+				<li v-for="d in videoTracks">
+					<ul>
+						<li><b>Device:</b> {{ d.deviceId }}</li>
+						<li><b>GroupId:</b> {{ d.groupId }}</li>
+						<li><b>Kind:</b> {{ d.kind }}</li>
+						<li><b>Label:</b> {{ d.label }}</li>
+					</ul>
+					<hr>
+				</li>
+			</ul>
+			
+			<div><b>Constraints:</b></div>
+			<ul v-if="ctrs">
+				<li v-for="(v, k) in ctrs">
+					{{ k }}: {{ v }}
+				</li>
+			</ul>
 		</div>
 
 
-		<video ref="video"></video>
+		<video ref="video" autoplay playsinline></video>
 	</div>
 </template>
 
@@ -27,14 +46,24 @@
 	@Component
 	export default class App extends Vue {
 
-		showDeviceList = false;
+		showDeviceList = true;
 		devices: MediaDeviceInfo[] = [];
+		videoTracks: MediaStreamTrack[] = [];
+		ctrs?: MediaTrackSupportedConstraints;
 
 		async mounted(){
 			this.devices = await this.getDevices()
 
 			let videoEl = this.$refs.video as HTMLVideoElement;
-			videoEl.srcObject = await this.getDepthStream();
+			// videoEl.srcObject = await this.getDepthStream();
+			let stream = await navigator.mediaDevices.getUserMedia({
+				video: true,
+				audio: false
+			});
+			videoEl.srcObject = stream;
+			this.videoTracks = stream.getVideoTracks();
+			this.ctrs = navigator.mediaDevices.getSupportedConstraints();
+			console.log(this.videoTracks)
 
 			// let stream =
 			// this.$refs['video'].
@@ -71,8 +100,7 @@
 	video {
 		display: block;
 		margin-top: 50px;
-		width: 1024px;
+		width: 600px;
 		max-width: 100%;
-		height: 768px;
 	}
 </style>
